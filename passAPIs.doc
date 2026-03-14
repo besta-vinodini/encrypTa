@@ -1,0 +1,8 @@
+| Method | Endpoint                       | Purpose              |
+| ------ | ------------------------------ | -------------------- |
+| POST   | `/api/users/register`          | Register user        |
+| POST   | `/api/users/login`             | Login user           |
+| POST   | `/api/passwords`               | Add password         |
+| GET    | `/api/passwords/user/{userId}` | Get user's passwords |
+| PUT    | `/api/passwords/{id}`          | Update password      |
+| DELETE | `/api/passwords/{id}`          | Delete password      |
