@@ -14,7 +14,7 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      <div className="navbar-brand">
+      <div className="navbar-brand" onClick={() => window.location.reload()}>
         <div className="navbar-brand-icon">
           <RiShieldKeyholeFill color="#fff" size={18} />
         </div>

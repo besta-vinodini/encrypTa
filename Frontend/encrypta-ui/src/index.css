@@ -302,6 +302,7 @@ body::before {
 
 .navbar-brand {
   display: flex; align-items: center; gap: 0.625rem;
+  cursor: pointer;
 }
 .navbar-brand-icon {
   width: 36px; height: 36px;
