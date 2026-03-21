@@ -19,6 +19,9 @@ public class PasswordEntry {
     private String username;
     private String password;
 
+    @Column(nullable = false)
+    private String category = "Others";
+
     // FOREIGN KEY
     @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     @ManyToOne

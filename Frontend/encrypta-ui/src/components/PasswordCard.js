@@ -2,13 +2,30 @@ import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import {
   RiEyeLine, RiEyeOffLine, RiFileCopyLine,
-  RiDeleteBin5Line, RiGlobalLine, RiUserLine
+  RiDeleteBin5Line, RiUserLine
 } from 'react-icons/ri';
 import { deletePassword } from '../api';
 
-export default function PasswordCard({ entry, onDeleted }) {
-  const [visible, setVisible] = useState(false);
-  const [deleting, setDeleting]= useState(false);
+const CATEGORY_COLORS = {
+  'Social Media':   'badge-social',
+  'Work':           'badge-work',
+  'Finance':        'badge-finance',
+  'Email':          'badge-email',
+  'Shopping':       'badge-shopping',
+  'Entertainment':  'badge-entertainment',
+  'Education':      'badge-education',
+  'Developer':      'badge-developer',
+  'Mobile Apps':    'badge-mobile',
+  'Healthcare':     'badge-healthcare',
+  'Travel':         'badge-travel',
+  'Subscriptions':  'badge-subscriptions',
+  'Government':     'badge-government',
+  'Others':         'badge-other',
+};
+
+export default function PasswordCard({ entry, onDeleted, onRequestVerify }) {
+  const [revealedPw, setRevealedPw] = useState(null);
+  const [deleting, setDeleting]     = useState(false);
 
   const getSiteIcon = (website) => {
     const w = (website || '').toLowerCase();
@@ -24,10 +41,26 @@ export default function PasswordCard({ entry, onDeleted }) {
     return '🔐';
   };
 
+  const handleTogglePassword = () => {
+    if (revealedPw) {
+      // already revealed → hide it
+      setRevealedPw(null);
+    } else {
+      // request re-authentication
+      onRequestVerify(entry.entryId, (decryptedPassword) => {
+        setRevealedPw(decryptedPassword);
+      });
+    }
+  };
+
   const copyPassword = () => {
-    navigator.clipboard.writeText(entry.password).then(() => {
-      toast.success('Password copied to clipboard!');
-    });
+    if (revealedPw) {
+      navigator.clipboard.writeText(revealedPw).then(() => {
+        toast.success('Password copied to clipboard!');
+      });
+    } else {
+      toast('Reveal the password first before copying', { icon: '🔒' });
+    }
   };
 
   const handleDelete = async () => {
@@ -43,6 +76,9 @@ export default function PasswordCard({ entry, onDeleted }) {
     }
   };
 
+  const category = entry.category || 'Others';
+  const badgeClass = CATEGORY_COLORS[category] || 'badge-other';
+
   return (
     <div className="pw-card">
       <div className="pw-card-header">
@@ -54,20 +90,21 @@ export default function PasswordCard({ entry, onDeleted }) {
             {entry.username}
           </div>
         </div>
+        <span className={`badge ${badgeClass}`}>{category}</span>
       </div>
 
       <div className="pw-card-body">
         <div className="pw-field-label">Password</div>
         <div className="pw-display">
           <span className="pw-text">
-            {visible ? entry.password : '•'.repeat(Math.min(entry.password?.length || 8, 16))}
+            {revealedPw ? revealedPw : '••••••••'}
           </span>
           <button
             className="btn btn-ghost btn-icon"
-            onClick={() => setVisible(v => !v)}
-            title={visible ? 'Hide' : 'Show'}
+            onClick={handleTogglePassword}
+            title={revealedPw ? 'Hide' : 'Show (requires verification)'}
           >
-            {visible ? <RiEyeOffLine size={15} /> : <RiEyeLine size={15} />}
+            {revealedPw ? <RiEyeOffLine size={15} /> : <RiEyeLine size={15} />}
           </button>
         </div>
       </div>

@@ -38,4 +38,11 @@ public class UserService {
     public User getUserByEmail(String email) {
         return repo.findByEmail(email).orElse(null);
     }
+
+    // Re-authentication: verify password by user ID
+    public boolean verifyPassword(Long userId, String rawPassword) {
+        Optional<User> userOpt = repo.findById(userId);
+        if (userOpt.isEmpty()) return false;
+        return encoder.matches(rawPassword, userOpt.get().getPassword());
+    }
 }

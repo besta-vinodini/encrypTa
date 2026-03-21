@@ -1,11 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RiShieldKeyholeFill, RiLogoutBoxLine } from 'react-icons/ri';
+import { RiShieldKeyholeFill, RiLogoutBoxLine, RiSunLine, RiMoonLine } from 'react-icons/ri';
 
 export default function Navbar() {
   const navigate  = useNavigate();
   const email     = localStorage.getItem('userEmail') || 'User';
   const initials  = email.slice(0, 2).toUpperCase();
+
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'dark';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'light') {
+      root.classList.add('light');
+    } else {
+      root.classList.remove('light');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   const logout = () => {
     localStorage.clear();
@@ -22,6 +40,9 @@ export default function Navbar() {
       </div>
 
       <div className="navbar-right">
+        <button className="theme-toggle" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+          {theme === 'dark' ? <RiSunLine size={18} /> : <RiMoonLine size={18} />}
+        </button>
         <div className="user-badge">
           <div className="user-avatar">{initials}</div>
           <span>{email}</span>

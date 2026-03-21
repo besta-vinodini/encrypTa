@@ -4,11 +4,19 @@ import toast from 'react-hot-toast';
 import {
   RiAddLine, RiSearchLine, RiShieldCheckLine,
   RiLockPasswordLine, RiGlobalLine, RiUserLine,
-  RiEyeLine, RiEyeOffLine, RiCloseLine, RiSaveLine
+  RiEyeLine, RiEyeOffLine, RiCloseLine, RiSaveLine,
+  RiPriceTag3Line
 } from 'react-icons/ri';
 import Navbar from '../components/Navbar';
 import PasswordCard from '../components/PasswordCard';
+import VerifyPasswordModal from '../components/VerifyPasswordModal';
 import { addPassword, getPasswordsByUser } from '../api';
+
+const CATEGORIES = [
+  'Social Media', 'Work', 'Finance', 'Email', 'Shopping',
+  'Entertainment', 'Education', 'Developer', 'Mobile Apps',
+  'Healthcare', 'Travel', 'Subscriptions', 'Government', 'Others'
+];
 
 function SkeletonCard() {
   return (
@@ -34,14 +42,19 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [search,  setSearch]  = useState('');
   const [showAdd, setShowAdd] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('All');
   const navigate = useNavigate();
 
   // Add form state
   const [website,  setWebsite]  = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [category, setCategory] = useState('Other');
   const [showPw,   setShowPw]   = useState(false);
   const [saving,   setSaving]   = useState(false);
+
+  // Verify modal state
+  const [verifyModal, setVerifyModal] = useState(null); // { entryId, callback }
 
   const userId = localStorage.getItem('userId');
 
@@ -69,9 +82,9 @@ export default function Dashboard() {
     if (!website || !username || !password) { toast.error('Please fill in all fields'); return; }
     setSaving(true);
     try {
-      const res = await addPassword({ website, username, password, user: { id: userId } });
+      const res = await addPassword({ website, username, password, category, user: { id: userId } });
       setList(prev => [res.data, ...prev]);
-      setWebsite(''); setUsername(''); setPassword('');
+      setWebsite(''); setUsername(''); setPassword(''); setCategory('Other');
       setShowAdd(false);
       toast.success(`Password for ${website} saved!`);
     } catch {
@@ -85,12 +98,26 @@ export default function Dashboard() {
     setList(prev => prev.filter(p => p.entryId !== id));
   };
 
+  const handleRequestVerify = (entryId, callback) => {
+    setVerifyModal({ entryId, callback });
+  };
+
   const safeList = Array.isArray(list) ? list : [];
 
-  const filtered = safeList.filter(p =>
-    (p.website  || '').toLowerCase().includes(search.toLowerCase()) ||
-    (p.username || '').toLowerCase().includes(search.toLowerCase())
-  );
+  // Get category counts
+  const categoryCounts = safeList.reduce((acc, p) => {
+    const cat = p.category || 'Other';
+    acc[cat] = (acc[cat] || 0) + 1;
+    return acc;
+  }, {});
+
+  const filtered = safeList.filter(p => {
+    const matchesSearch =
+      (p.website  || '').toLowerCase().includes(search.toLowerCase()) ||
+      (p.username || '').toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = activeCategory === 'All' || (p.category || 'Other') === activeCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="app-layout">
@@ -112,6 +139,13 @@ export default function Dashboard() {
             <div className="stat-info">
               <div className="stat-num">{new Set(safeList.map(p => p.website?.split('.')[0])).size}</div>
               <div className="stat-lbl">Unique Sites</div>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon green"><RiPriceTag3Line /></div>
+            <div className="stat-info">
+              <div className="stat-num">{Object.keys(categoryCounts).length}</div>
+              <div className="stat-lbl">Categories</div>
             </div>
           </div>
         </div>
@@ -161,6 +195,21 @@ export default function Dashboard() {
                     </button>
                   </div>
                 </div>
+                <div className="field">
+                  <label>Category</label>
+                  <div className="input-wrapper">
+                    <RiPriceTag3Line className="input-icon" />
+                    <select
+                      className="app-select"
+                      value={category}
+                      onChange={e => setCategory(e.target.value)}
+                    >
+                      {CATEGORIES.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
               <div className="add-panel-actions">
                 <button type="button" className="btn btn-ghost" onClick={() => setShowAdd(false)}>
@@ -173,6 +222,25 @@ export default function Dashboard() {
             </form>
           </div>
         )}
+
+        {/* Category Filter */}
+        <div className="category-filter">
+          {['All', ...CATEGORIES].map(cat => (
+            <button
+              key={cat}
+              className={`category-pill${activeCategory === cat ? ' active' : ''}`}
+              onClick={() => setActiveCategory(cat)}
+            >
+              {cat}
+              {cat === 'All'
+                ? <span className="pill-count">{safeList.length}</span>
+                : categoryCounts[cat]
+                  ? <span className="pill-count">{categoryCounts[cat]}</span>
+                  : null
+              }
+            </button>
+          ))}
+        </div>
 
         {/* Header */}
         <div className="section-header">
@@ -207,19 +275,35 @@ export default function Dashboard() {
               <div className="empty-icon">🔐</div>
               {safeList.length === 0
                 ? <><h3>Your vault is empty</h3><p>Click "Add Password" to store your first entry.</p></>
-                : <><h3>No results found</h3><p>Try a different search term.</p></>
+                : <><h3>No results found</h3><p>Try a different search term or category filter.</p></>
               }
             </div>
           ) : (
             filtered.map((entry, i) => (
               <div key={entry.entryId} style={{ animationDelay: `${i * 40}ms` }}>
-                <PasswordCard entry={entry} onDeleted={handleDeleted} />
+                <PasswordCard
+                  entry={entry}
+                  onDeleted={handleDeleted}
+                  onRequestVerify={handleRequestVerify}
+                />
               </div>
             ))
           )}
         </div>
 
       </div>
+
+      {/* Verify Password Modal */}
+      {verifyModal && (
+        <VerifyPasswordModal
+          entryId={verifyModal.entryId}
+          onClose={() => setVerifyModal(null)}
+          onVerified={(decryptedPw) => {
+            verifyModal.callback(decryptedPw);
+            setVerifyModal(null);
+          }}
+        />
+      )}
     </div>
   );
 }

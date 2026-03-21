@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/users")
@@ -33,5 +35,17 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body("Invalid email or password");
     }
-}
 
+    // Re-authentication endpoint
+    @PostMapping("/verify-password")
+    public ResponseEntity<?> verifyPassword(@RequestBody Map<String, Object> body) {
+        Long userId = Long.valueOf(body.get("userId").toString());
+        String password = (String) body.get("password");
+
+        if (service.verifyPassword(userId, password)) {
+            return ResponseEntity.ok(Map.of("verified", true));
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("verified", false, "message", "Incorrect password"));
+    }
+}
