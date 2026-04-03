@@ -1082,6 +1082,71 @@ h1,h2,h3,h4 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; line-h
 }
 .pw-card:hover .pw-card-actions { opacity: 1; transform: translateY(0); }
 
+/* ── Delete Confirmation Overlay ───────────────────────────── */
+.pw-delete-confirm {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  border-radius: var(--r-lg);
+  background: rgba(10, 8, 28, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.1) inset, 0 8px 32px rgba(239, 68, 68, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  animation: confirmFadeIn 0.18s var(--ease) both;
+}
+
+@keyframes confirmFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.pw-delete-confirm-icon {
+  font-size: 2rem;
+  animation: iconBounce 0.35s var(--ease-bounce) both;
+}
+
+@keyframes iconBounce {
+  0%   { transform: scale(0.4) rotate(-10deg); }
+  70%  { transform: scale(1.15) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.pw-delete-confirm-text {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.pw-delete-confirm-text strong {
+  color: #fff;
+  font-weight: 700;
+}
+
+.pw-delete-confirm-text span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.pw-delete-confirm-actions {
+  display: flex;
+  gap: 0.625rem;
+  margin-top: 0.25rem;
+}
+
+.pw-delete-confirm-actions .btn {
+  padding: 0.5rem 1.1rem;
+  font-size: 0.825rem;
+}
+
 /* Category badges */
 .badge {
   display: inline-flex; align-items: center;

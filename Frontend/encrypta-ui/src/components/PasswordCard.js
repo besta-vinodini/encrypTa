@@ -40,9 +40,10 @@ function getSiteIcon(website) {
 }
 
 export default function PasswordCard({ entry, onDeleted, onRequestVerify, onEdit }) {
-  const [revealedPw, setRevealedPw] = useState(null);
-  const [deleting,   setDeleting]   = useState(false);
-  const [copied,     setCopied]     = useState(false);
+  const [revealedPw,    setRevealedPw]    = useState(null);
+  const [deleting,      setDeleting]      = useState(false);
+  const [copied,        setCopied]        = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const handleTogglePassword = () => {
     if (revealedPw) {
@@ -64,7 +65,6 @@ export default function PasswordCard({ entry, onDeleted, onRequestVerify, onEdit
   };
 
   const handleDelete = async () => {
-    if (!window.confirm(`Delete password for "${entry.website}"?`)) return;
     setDeleting(true);
     try {
       await deletePassword(entry.entryId);
@@ -74,6 +74,7 @@ export default function PasswordCard({ entry, onDeleted, onRequestVerify, onEdit
       toast.error('Failed to delete');
       setDeleting(false);
     }
+    setConfirmDelete(false);
   };
 
   const category  = entry.category || 'Others';
@@ -115,6 +116,33 @@ export default function PasswordCard({ entry, onDeleted, onRequestVerify, onEdit
         </div>
       </div>
 
+      {/* Delete confirmation overlay */}
+      {confirmDelete && (
+        <div className="pw-delete-confirm">
+          <div className="pw-delete-confirm-icon">🗑️</div>
+          <p className="pw-delete-confirm-text">
+            Delete <strong>{entry.website}</strong>?<br />
+            <span>This action cannot be undone.</span>
+          </p>
+          <div className="pw-delete-confirm-actions">
+            <button
+              className="btn btn-ghost"
+              onClick={() => setConfirmDelete(false)}
+              disabled={deleting}
+            >
+              Cancel
+            </button>
+            <button
+              className={`btn btn-danger${deleting ? ' btn-loading' : ''}`}
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? '' : 'Delete'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Actions (slide up on hover) */}
       <div className="pw-card-actions">
         <button
@@ -134,7 +162,7 @@ export default function PasswordCard({ entry, onDeleted, onRequestVerify, onEdit
         </button>
         <button
           className="btn btn-danger btn-icon"
-          onClick={handleDelete}
+          onClick={() => setConfirmDelete(true)}
           disabled={deleting}
           title="Delete"
         >

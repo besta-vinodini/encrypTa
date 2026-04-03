@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: `http://${window.location.hostname}:8080/api`,
 });
 
 // Attach userId header to every request if logged in
