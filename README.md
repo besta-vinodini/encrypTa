@@ -89,7 +89,7 @@ EncrypTa-Full-Stack-main/
 ├── Backend/          # Spring Boot Application
 │   └── demo (2)/     # Project Root
 ├── Frontend/         # React Application
-│   └── encrypta-ui/  # UI Source Code
+│   └── encrypta-ui/  # UI Source code
 ├── logo.png          # Branding Assets
 └── passAPIs.doc      # API Documentation Reference
 ```
